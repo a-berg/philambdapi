@@ -1,0 +1,521 @@
+---
+title: Taichi First Steps
+tags: λ
+---
+
+As I delved into the fascinating world of [[https://physicsbaseddeeplearning.org/diffphys.html][differentiable physics]], I stumbled upon a gem
+of a language called Taichi. Its ability to effortlessly bring GPU programming to Python
+caught my attention and I was instantly hooked.
+
+#+BEGIN_QUOTE
+/Warning: the post is a bit long!/
+#+END_QUOTE
+
+** The case for Taichi
+   :PROPERTIES:
+   :CUSTOM_ID: the-case-for-taichi
+   :END:
+
+In the world of ML, Python is king. Now, Python has lot of nice things, but performance
+is a known pain-point of the language since its inception. There's been no shortage of
+work-arounds and solutions to this problem, from offloading to C/Fortran (which is what
+earlier solutions like =numpy=, =scipy= and =cython= did, but also Tensorflow and Pytorch) to
+more elaborate JIT strategies (such as Numba and PyPy).  In fact, there was even an
+attempt to overthrow Python altogether and go in a "numeric-centric" approach: a nice
+language named [[https://julialang.org/][Julia]]. Now, I won't go into this language now but let me just say that
+while it has a lot of great ideas, it didn't completely stick: the ML people love their
+Python and they just won't leave such a massive ecosystem for an unknown, albeit
+promising, alternative.
+
+Taichi's creator [[https://github.com/yuanming-hu][Yuanming Hu]] seemingly didn't make that mistake and presents a new
+language under the guise of a library and set of decorators (much like Tensorflow does
+btw). Taichi, essentially, is a compiled language with a syntax almost entirely equal to
+that of Python that lets you do automatic differentiation and GPU computation (among
+other high-performance related features).
+
+I must say, I am impressed with the language.
+
+** The Julia set
+   :PROPERTIES:
+   :CUSTOM_ID: the-julia-set
+   :END:
+
+[[https://en.wikipedia.org/wiki/Julia_set][Julia sets]] are a type of fractal particularly interesting for paralellization since the
+computations for each point in the complex plane are independent from each other. They
+are beautiful once rendered and easy to understand and implement. Taichi's [[https://docs.taichi-lang.org/docs/hello_world][hello world]]
+example is exactly this, a code that I reproduce here with minimal changes.
+
+Let's recall the definition of a Julia set:
+
+\[ \left\{z \in \mathbb C : \forall n \in \mathbb N, |f_c^n(z)| \le R \right\} \]
+
+This definition essentially reads: for a complex number \(c\), if the sequence defined
+by iteratively applying the function \(f_c(z)\) to itself converges for a given \(z\)
+means that \(z\) is in the set. The funcion $f_c(z)$ can be any (non-constant)
+holomorphic function, but the classic choice is \(z^2+c\).
+
+In practice, there's a radius over which the sequence is known to diverge (\(R=2\)) and
+therefore a maximum number of iterations is set: if the sequence has not diverged after
+this number of iterations, then you consider it as a point of the set. For aesthetic
+reasons, for those points that diverge, a color is assigned based on how many iterations
+they took to diverge.
+
+Now that we have a brief introduction on the problem, let's write the program that will
+compute it.
+
+#+begin_src python
+  import taichi as ti
+  import taichi.math as tm
+
+  ti.init(arch=ti.gpu)
+#+end_src
+
+Initially, we import =taichi=, =taichi.math= and initialize the Taichi backend, telling it
+to run on the GPU. Just like that, we are going to compile code for our graphics card,
+no CUDA needed.
+
+#+begin_src python
+  n = 320
+  pixels = ti.field(dtype=float, shape=(n * 2, n))
+#+end_src
+
+Next, define a simple costant for image size (=n=320= means that we will compute a 640×320
+image) and a taichi =field=, a data structure that more or less represents a nd array or a
+tensor, although =field=s also have information about their layout (this means that you
+can have a lot of granularity over how the data is represented in memory and seen by the
+processor, allowing for advanced performance insights).
+
+#+begin_src python
+  @ti.func
+  def complex_square(z):  # complex square of a 2D vector
+      return tm.vec2(z[0] * z[0] - z[1] * z[1], 2 * z[0] * z[1])
+#+end_src
+
+We define the operation of squaring complex numbers (here assuming they are represented
+by a struct with 2 elements), as we will need it to compute the sequence. Notice a
+couple of things: the =@ti.func= decorator, and =tm.vec2= (from the previous =taichi.math=
+import).
+
+By decorating a python function with =@ti.func= you are in fact swapping languages and
+defining a Taichi function. Taichi functions are procedures to be used inside Taichi
+/kernels/, (or inside other Taichi functions), and not in regular python code. In other
+words: this function is no longer a python function. Another thing: Taichi functions can
+be nested, but are not allowed to be called recursively.  Additionally, the use of
+=tm.vec2= reveals anoter taichi function, in particular a constructor of vectors.
+
+#+begin_src python
+  @ti.kernel
+  def paint(t: float):
+      for i, j in pixels:  # Parallelized over all pixels
+          c = tm.vec2(0.7885 * tm.cos(t), 0.7885 * tm.sin(t))
+          z = tm.vec2(i / n - 1, j / n - 0.5) * 2
+          iterations = 0
+          while z.norm() < 20 and iterations < 50:
+              z = complex_square(z) + c
+              iterations += 1
+              pixels[i, j] = 1 - iterations * 0.02
+#+end_src
+
+This function, as you might notice, is using a =for= loop (a big no-no in python, usually)
+to compute the sequence of complex numbers. There is a lot to unpack here, so brace
+yourselves.
+
+First, let's start with the function logic itself: it takes a float parameter, =t=, and
+for each element of the =pixels= field defines the constant =c= that will define that
+particular Julia set (with some fancyness such as using the sine and cosine which,
+again, are Taichi functions); then defines the initial complex number =z= of the sequence,
+and goes on to compute the sequence, check if it diverges and update pixels using the
+number of iterations the sequence endured without diverging (up to 50). A value of \(z\)
+taking up 50 iterations without diverging (thus pertaining to the Julia set) will appear
+as completely black, a value of \(z\) diverging in the zeroth iteration will be
+completely white; anything in between will be some sade of gray.
+
+You might notice the use of =tm.vec2= again: as said, this is a Taichi constructor
+(function) for a struct with 2 fields, and therefore can only be used inside a
+/kernel/. Which brings us to the meaty part: the decorator =@ti.kernel= itself. Taichi
+kernels are the entry points to the /real/ (compiled) Taichi, and they *must* follow two
+important rules:
+
+- Kernels have to be type hinted (both their arguments and their return
+  type).
+- Kernels cannot be nested.
+
+Since they are the entry points, you can call them anywhere in the python program
+(unlike functions which can *only* be called from inside kernels). More importantly,
+notice how the =for= loop iterates over =i, j= like it was a list of tuples: this is a key
+aspect of using Taichi =field=s and of Taichi kernels; kernels /automatically parallelize
+their outermost scope loop/ and by using =for i, j in myfield:=, you are telling Taichi
+"the indices i and j of my field can be computed independently", which makes Taichi
+parallelize over both of them. This is really powerful.
+
+#+begin_src python
+  gui = ti.GUI("Julia Set", res=(n * 2, n))
+#+end_src
+
+This part is simple, but also marvelous: just call =ti.GUI= and a window with the
+specified resolution is created for you. I find this very convenient because, while you
+can of course create animations with matplotlib without much complication, it can get
+tedious pretty fast; whereas using Taichi's graphical capabilities is immediate.
+
+#+begin_src python
+  τ = 6.28318530718
+  max_iter = 1_000_000
+  for i in range(max_iter):
+      paint(i * τ/(n-1))
+      gui.set_image(pixels)
+      gui.show()
+#+end_src
+
+Iterate a million times over the pixel data structure. That is a million Julia sets
+being computed on your GPU, with no need to do anything special (other than coding using
+=for= loops in python, finally), and it does so in a breeze.
+
+As for the results, there's a nice gif:
+
+#+BEGIN_CENTER
+#+CAPTION: Julia set for $c$ in $0.7885\exp(a i)$.
+#+NAME:   fig:julia
+[[https://raw.githubusercontent.com/a-berg/learning_taichi/main/results/julia/video.gif]]
+#+END_CENTER
+
+The gif can be easily generated adding a couple (or maybe 4) lines to our code:
+
+#+begin_src python
+  ...
+  gui = ti.GUI("Julia Set", res=(n * 2, n))
+  video_manager = ti.tools.VideoManager(
+      output_dir="./results/julia/", framerate=24, automatic_build=False
+  )
+  ...
+  for i in range(max_iter):
+      ...
+      video_manager.write_frame(pixels.to_numpy())
+      ...
+
+  video_manager.make_video(gif=True, mp4=True)
+#+end_src
+
+
+** The Gray-Scott equations
+   :PROPERTIES:
+   :CUSTOM_ID: the-gray-scott-equations
+   :END:
+Let's now solve a more interesting problem: the Gray-Scott model of reaction-diffusion
+systems. Reaction-diffusion systems are systems in which two (or more) chemical
+reactives are allowed to flow through a medium at the same time as they react. They are
+important for describing the occurence of natural patterns in animals. The equations
+are:
+
+\[
+\begin{aligned}
+    \partial{u}{t} &= r_u\Delta u - uv^2 + f(1-u) \\
+    \partial{v}{t} &= r_v\Delta v + uv^2 - (f + k) v.
+\end{aligned}
+\]
+
+You might notice the term \(uv^2\), which seems somewhat arbitrary. It is not: it
+corresponds to the chemical equation \(U+2V \rightarrow 3U\) between the chemicals. As for the
+rest of the equation: \(u\) and \(v\) are the concentrations of the reactives, \(f\) and
+\(k\) are the /feed/ and /kill/ rate (the rate at which U is introduced into the system, and
+V is transformed into a third, inert, component -- effectively disappearing), r_i are the
+diffusivity parameters (how easily each reactant spreads through the medium), and we of
+course have the laplacian \(\Delta\) of each of the concentrations which causes the diffusion
+of chemicals.
+
+In this case, we are going to solve them using Taichi.
+
+*** Original numpy code
+
+Our starting point will be [[https://github.com/a-berg/learning_taichi/blob/main/src/gray_scott.py][this]] old code of mine written entirely using =numpy=
+to see how it evolves.
+
+#+begin_src python
+  # gray_scott_np.py
+  import numpy as np
+  import matplotlib.pyplot as plt
+
+
+  def evolve(domain):
+      domain_ = np.pad(domain, ((0, 0), (1, 1), (1, 1)), "wrap")
+      u = domain[0, :, :]
+      v = domain[1, :, :]
+      r = u * v * v
+
+      laplacian = (
+          0.25 * domain_[:, 1:-1, :-2]
+          + 0.25 * domain_[:, 1:-1, 2:]
+          + 0.25 * domain_[:, :-2, 1:-1]
+          + 0.25 * domain_[:, 2:, 1:-1]
+          - domain
+      )
+      du = τ * 1.0 * laplacian[0, :, :] - r + γ * (1 - u)
+      dv = τ * 0.5 * laplacian[1, :, :] + r - (γ + k) * v
+      return domain + np.stack((du, dv), 0)
+
+
+  def center_square(M, l=10):
+      _, n, m = M.shape
+      n //= 2
+      m //= 2
+      return slice(n - l, n + l), slice(m - l, m + l)
+
+
+  τ = 0.8388  # can't quite remember why this was needed.
+  γ, k = 0.024, 0.055
+  resol = 256
+
+  domain = np.zeros((2, resol, resol))
+  domain[0, :, :] = 1
+  idx1, idx2 = center_square(domain, 10)
+  domain[1, idx1, idx2] = 1
+
+  for i in range(10000):
+      domain = evolve(domain)
+
+  plt.figure(figsize=(16, 9))
+  plt.imshow(domain[1])
+  plt.colorbar()
+#+end_src
+
+*** Porting to Taichi
+   :PROPERTIES:
+   :CUSTOM_ID: porting-to-taichi
+   :END:
+
+As with the Julia code, import taichi and initialize on the GPU. I will also define the
+resolution of the system (a small change: instead of using =resol= and defining a square
+domain, I will now use width and height in case I want to use rectangular domains).
+
+#+begin_src python
+  import taichi as ti
+  import taichi.math as tm
+  import numpy as np
+
+  ti.init(arch=ti.gpu)
+
+  # resolution of the problem
+  W, H = 256, 256
+  # for initialization purposes
+  np_grid = np.zeros((W, H, 2), dtype=np.float32)
+  np_grid[:, :, 0] = 1.0  # Reactant H = 1.0 in all domain initially.
+  # square with reactant V = 1.0 in the middle of the domain
+  np_grid[(W // 2 - 10) : (W // 2 + 10), (H // 2 - 10) : (H // 2 + 10), 1] = 1.0
+#+end_src
+
+There is a =np_grid= array being defined. In fact, this is the only thing we need numpy
+for now: initialization. Note that I could just use a kernel to do exactly the same,
+however, I prefer to demonstrate the ability of Taichi of being initialized using numpy
+arrays.
+
+I need to define the problem domain as a Taichi =field=. Since there are 2 components for
+each point in the field, the construct =Vector= is useful here (even if this is not a
+truly vectorial magnitude). Taichi fields support scalar fields, vector fields, matrix
+fields and struct fields.
+
+#+begin_src python
+  domain = ti.Vector.field(n=2, dtype=ti.f32, shape=(W, H))
+#+end_src
+
+When computing Julia sets the problem was embarrassingly paralel and we needed to do
+nothing special to solve it because each point's sequence was completely independent of
+each other. However, because we are solving a PDE here, this problem has a temporal
+dependence and we can't update the field as we compute the next time step, or else we
+would spoil the computations of other points that will mix the future and the present
+state of the system. Instead, we define a secondary =Vector= field that will hold the
+"future" state of the system as we integrate one state, then update the domain by
+copying this field into the other.
+
+#+begin_src python
+  # auxiliary field for PDE solving
+  future = ti.Vector.field(n=2, dtype=ti.f32, shape=(W, H))
+#+end_src
+
+Also, because we are dealing with fields that are not simply scalars, I will define
+another auxiliary field that we will use for plotting. Essentially, it will map vectors
+to scalars that will be plotted by Taichi's GUI as a grayscale raster. If we wanted
+colors, we should define it as another =Vector= field (4d for RGB+alpha).
+
+#+begin_src python
+  # used for rendering
+  pixels = ti.field(dtype=ti.f32, shape=(W, H))
+#+end_src
+
+Now, let's define the constants of the problem. I have changed them wrt the numpy code,
+as the system is very sensitive to these constants, and they are very
+computation-dependant, i.e. if this code runs quicker then the relationships between
+these variables vary and the previous values give a completely different behaviour.
+It would require extra work to make the computation robust.
+
+#+begin_src python
+  # Define constants
+  r_u: float = 0.250
+  r_v: float = r_u / 2  # 0.080
+  feed: float = 0.040
+  kill: float = 0.062
+#+end_src
+
+I have decided to define the laplacian as a Taichi function to make code more readable.
+
+#+begin_src python
+  @ti.func
+  def laplacian(i: int, j: int):
+      """Compute the laplacian of a point identified by i and j.
+
+      This Taichi function simply computes the discrete laplacian over a regular grid by
+      using finite differences.
+
+      Parameters
+      ----------
+      i : int
+          reference to the first index of the point in the grid.
+      j : int
+          reference to the second intex of the point in the grid
+      """
+      return (
+          domain[i + 1, j]
+          + domain[i, j + 1]
+          + domain[i - 1, j]
+          + domain[i, j - 1]
+          - domain[i, j] * 4.0
+      )
+#+end_src
+
+Now the meaty part: kernels. In the =numpy= version of the code, we used a function named
+=evolve= to solve the equations; this function is now (unurprisingly) a Taichi
+kernel. Additionally, another kernel was defined for rendering, i.e.: transforming
+values of our =domain= into colors (or in this simple case, grayscale sclars).
+
+Let's do first the =render= one:
+
+#+begin_src python
+  @ti.kernel
+  def render():
+      """Differently to a scalar field, vector fields need to be processed a bit for them
+      to be paintable."""
+      for i, j in domain:
+          # paint just the V concentration.
+          pixels[i, j] = domain[i, j][1]
+#+end_src
+
+which is very simple as you can see. Nevertheless, making it a bit more sphisticated in
+order to use full RGB colors is easy, if verbose.
+
+For the =evolve= kernel, the code is really similar to the previous version: the main
+changes are that it no longer has an argument, neither does it return anything, and
+there is a couple for loops: one to solve the equation and one to update the =domain=
+for the next timestep.
+
+#+begin_src python
+  @ti.kernel
+  def evolve():
+      """Integrate one timestep of the discretized Gray-Scott equation.
+
+      Define a Taichi kernel to compute the next state of the system. Uses Explicit Euler
+      to integrate.
+      """
+      for i, j in domain:
+          uv = domain[i, j]
+          reaction = uv[0] * uv[1] * uv[1]
+          Δ = laplacian(i, j)
+          du = r_u * Δ[0] - reaction + feed * (1 - uv[0])
+          dv = r_v * Δ[1] + reaction - (feed + kill) * uv[1]
+          # instead of returning, update in place (returning would get us outside
+          # of the GPU)
+          uv_1 = uv + 0.5 * tm.vec2(du, dv)
+          future[i, j] = uv_1
+
+      for I in ti.grouped(domain):
+          domain[I] = future[I]
+#+end_src
+
+The code is not a 1:1 translation of course, but it is very similar. A new concept here:
+=ti.grouped=. It simply allows your code to be less verbose by grouping all indices into a
+single object (that implements operators such as sum or integer division). Imagine
+having a 4d field: instead of using =my_array[i,j,k,l] = ...= you could write =my_array[i]
+= ...= It's purely syntactic sugar.
+
+Very little remains: just write a =main()= function to run the simulation and manage the
+GUI. You will notice the =substeps= variable. This is a trick I got from this [[https://docs.taichi-lang.org/blog/accelerate-python-code-100x][blog post]] by
+the creator of Taichi which also solves these equations; I think it accelerates the code
+by evolving the system several timesteps at before painting.
+
+#+BEGIN_QUOTE
+Note: at first I was convinced of it, but then I discovered that my code was going slow
+not because of the lack of this trick but because generating the GIF slows the process
+overall, so now I am not so sure.
+#+END_QUOTE
+
+#+begin_src python
+  def main():
+      gui = ti.GUI("Gray Scott", res=(W, H))
+      substeps: int = 60  # 1
+      domain.from_numpy(np_grid)
+      result_dir = "./results/reaction_diffusion/"
+      # VideoManager let's me create gifs easily.
+      video_manager = ti.tools.VideoManager(output_dir=result_dir, framerate=24, automatic_build=False)
+      while not gui.get_event(ti.GUI.ESCAPE, ti.GUI.EXIT):
+          # If we compute each time we render, the system evolves very slowly.
+          # By evolving the equation 60 times before rendering, we accelerate the real
+          # time evolution.
+          for _ in range(substeps):
+              evolve()
+          render()
+          gui.set_image(pixels)
+          gui.show()
+          video_manager.write_frame(pixels.to_numpy())
+
+      video_manager.make_video(gif=False)  # output as mp4 that will be converted to gif later
+
+
+  # wrapping thing into `if __name__=="__main__"` prevents the function from being
+  # executed if we call `ti run` (my preferred method to run taichi code) in the command
+  # line, because that way this file is no longer "__main__".
+  main()
+#+end_src
+
+The results can be seen here:
+
+#+BEGIN_CENTER
+#+CAPTION: Reaction diffusion partial differential equation.
+#+NAME:   fig:gray_scott
+[[https://raw.githubusercontent.com/a-berg/learning_taichi/main/results/reaction_diffusion/video.gif]]
+#+END_CENTER
+
+*** Improvements
+
+The code could be improved in many ways (e.g. use a better integrator), although I want
+to focus in refactoring the code using Taichi's OOP capabilities; and also add a color
+palette to the plot. Also, I will be using a single field (with an extra dimension) like
+Yuanming does in his post for the management of the two temporal steps we need in the
+code; and do a small change to the GUI usage (mainly, use =canvas=).
+
+In order to not clutter this blog post /even more/, I'm going to just link [[https://github.com/a-berg/learning_taichi][the github repo]]
+where you can see the final version.
+
+# By switching to the =canvas= painting backend, the FPS go from 60 to over 700 on my
+# graphics card (except when writing frames; that slows down to about 38-40 FPS), which is
+# an amazing improvement by just switching the plotting backend.
+
+** Concluding remarks
+
+The Taichi language is, at first, a bit hard to get used to (years of programming "the
+numpy way" created sticky habits), but often you understand a couple concepts (namely
+fields and kernels) and get used to writing =for= loops again, you quickly start doing
+more and more.
+
+I, however, expected the switch to be smoother; I ended up spending quite a few hours on
+this (although most of the time was changing/perfecting small things).  But the language
+is kind-of addictive in the sense that it feels like magic: code that previously ran at
+30 FPS now is blazing fast and you end up wanting to try out more and more things; more
+simulation code, and maybe explore the autodiff capabilities writing some neural network
+code.
+
+That said, the overall experience is that you get *a lot* in terms of computing power for
+very little hassle; however, these code snippets are fairly simple. I'm very interested
+now in how this Taichi code would scale to larger, complex projects and how easy would it
+be to manage said complexity (which is what programming really is all about).
+
+Finally, my personal opinion: I had fun coding (very important!), the language makes me
+want to try new things, test and write low-level algorithms by myself (that otherwise
+would be lazy to do), and fits into Python very well. It seems like a nice tool to have
+and I will definetively have it in my tech radar.

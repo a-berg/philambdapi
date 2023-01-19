@@ -1,0 +1,54 @@
+html {
+    font-size: 2vmin;
+}
+body {
+    margin: 5vh auto;
+    max-width: 40vw; /* 40 rougly equals to 72 char-wide lines, 45 to 80. For now 72 seems more readable.*/
+    line-height: 1.6;
+    font-size: 1rem;
+    color: #444;
+    padding: 0 10vw;
+}
+
+blockquote p{
+    font-size: 0.85rem;
+}
+
+h1 h2 h3 {
+    font-family: serif;
+    line-height: 1.2;
+}
+h1 {font-size: 2.25rem;}
+h2 {font-size: 1.75rem;}
+h3 {font-size: 1.25rem;}
+
+footer {
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 5vh 0 0 0;
+    border-top: 0.1rem solid #444;
+}
+nav {
+    text-align: right;
+}
+nav a {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #444;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+article .header {
+    font-style: italic;
+    color: #999;
+}
+.logo a {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #444;
+    text-decoration: none;
+    float: left;
+}
+
+.pull-left {float: left;}
+.pull-right {float: right;}
