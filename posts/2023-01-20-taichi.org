@@ -47,7 +47,11 @@ example is exactly this, a code that I reproduce here with minimal changes.
 
 Let's recall the definition of a Julia set:
 
-\[ \left\{z \in \mathbb C : \forall n \in \mathbb N, |f_c^n(z)| \le R \right\} \]
+\[
+\begin{aligned}
+ \left\{z \in \mathbb C : \forall n \in \mathbb N, |f_c^n(z)| \le R \right\}.
+\end{aligned}
+\]
 
 This definition essentially reads: for a complex number \(c\), if the sequence defined
 by iteratively applying the function \(f_c(z)\) to itself converges for a given \(z\)

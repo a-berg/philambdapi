@@ -59,7 +59,11 @@ computations for each point in the complex plane are independent from each other
 are beautiful once rendered and easy to understand and implement. Taichi’s <a href="https://docs.taichi-lang.org/docs/hello_world">hello world</a>
 example is exactly this, a code that I reproduce here with minimal changes.</p>
 <p>Let’s recall the definition of a Julia set:</p>
-<p><span class="math display">{<em>z</em>∈ℂ:∀<em>n</em>∈ℕ,|<em>f</em><sub><em>c</em></sub><sup><em>n</em></sup>(<em>z</em>)|≤<em>R</em>}</span></p>
+<p><span class="math display">$$
+\begin{aligned}
+ \left\{z \in \mathbb C : \forall n \in \mathbb N, |f_c^n(z)| \le R \right\}.
+\end{aligned}
+$$</span></p>
 <p>This definition essentially reads: for a complex number <span class="math inline"><em>c</em></span>, if the sequence defined
 by iteratively applying the function <span class="math inline"><em>f</em><sub><em>c</em></sub>(<em>z</em>)</span> to itself converges for a given <span class="math inline"><em>z</em></span>
 means that <span class="math inline"><em>z</em></span> is in the set. The funcion <span class="math inline"><em>f</em><sub><em>c</em></sub>(<em>z</em>)</span> can be any (non-constant)
