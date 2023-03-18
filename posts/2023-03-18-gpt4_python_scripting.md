@@ -121,7 +121,8 @@ the expected output is:
     }
  }
 
-Revise your work for potential bugs before submitting. Write tests in a separate script to check it too.
+Revise your work for potential bugs before submitting. Write tests in a separate script
+to check it too.
 ```
 
 The prompt is reprocuded as-is (typo in the list numbering included). I added more
