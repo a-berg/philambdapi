@@ -87,9 +87,11 @@ decided to start anew with a prompt that merged all of it, which is the followin
 
 ```
 You have to write a python script that:
-1. Recursively crawls a directory, creating a nested dictionary representing the file and folder structure, with the first key being said directory.
+1. Recursively crawls a directory, creating a nested dictionary representing the file
+   and folder structure, with the first key being said directory.
 2. The recursion could have a limit, like the standard `tree` bash command.
-3. Using a recursive funcion is not a must, you could use a `while` loop if it helps performance and readability, or be creative with `dict` merging and splitting paths.
+3. Using a recursive funcion is not a must, you could use a `while` loop if it helps
+   performance and readability, or be creative with `dict` merging and splitting paths.
 3. accepts a directory as an input
 4. accepts a level optional argument to limit
 5. accepts an optional alias for the input directory
