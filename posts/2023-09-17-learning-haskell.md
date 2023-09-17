@@ -1,6 +1,6 @@
 ---
 title: Learning Haskell
-tags: programming
+tags:  λ
 ---
 
 ## Introduction
@@ -9,7 +9,7 @@ In the past few months I have been learning Haskell from a [free MOOC][1] public
 available and have completed Part I, which teaches the basics of the language, such as:
 
 - Recursion,
-- Higher order functions, like `fold`, `map` and the lik,e
+- Higher order functions, like `fold`, `map` and the like,
 - Currying, composition,
 - The type system, including recursive types. 
 

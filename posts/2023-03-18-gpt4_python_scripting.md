@@ -1,6 +1,6 @@
 ---
 title: Using GPT-4 to write utility functions.
-tags: computing
+tags: λ
 published: 18-03-2023
 ---
 
