@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>&Phi; &Lambda; &Pi; - Learning Haskell</title>
+        <link rel="stylesheet" type="text/css" href="../css/site.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">&Phi; &Lambda; &Pi;</a>
+            </div>
+            <nav>
+                <!-- <a href="/">Home</a> -->
+                <a href="../media/AdrianBergesCV_Jan2023.pdf">CV</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../archive.html">Archive</a>
+            </nav>
+        </header>
+        <main role="main">
+            <h1>Learning Haskell</h1>
+            <article>
+    <section class="header">
+        Posted on September 17, 2023
+        
+    </section>
+    <section>
+        <h2 id="introduction">Introduction</h2>
+<p>In the past few months I have been learning Haskell from a <a href="https://haskell.mooc.fi">free MOOC</a> publicly
+available and have completed Part I, which teaches the basics of the language, such as:</p>
+<ul>
+<li>Recursion,</li>
+<li>Higher order functions, like <code>fold</code>, <code>map</code> and the lik,e</li>
+<li>Currying, composition,</li>
+<li>The type system, including recursive types.</li>
+</ul>
+<blockquote>
+<p><em>but, why?</em></p>
+</blockquote>
+<p>Ah, why indeed. Well, I think it all started back in my C++ days<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. I was young and
+impressionable, and impressed by the standard <em>template</em> library I was, indeed!</p>
+<p>C++ STL was the work of <a href="https://en.wikipedia.org/wiki/Alexander_Stepanov">Alexander Stepanov</a> and it introduced a form of programming
+that, to me, was new at the moment. I also remember reading his book, <em>Elements of
+Programming</em> which made me wonder about other styles outside OOP and I became “obsessed”
+with algebra and generic programming and the need complex type systems that helped you
+write faster, safer and more elegant code.</p>
+<p>That led me to Lisp (Scheme), Racket (note to self: keep working on SICP) and Haskell but,
+at the moment, I didn’t “get” it.</p>
+<p>Fast forward an undefined number of years and I picked up the aforementioned MOOC. I
+worked on some problem sets but I was already too accustomed to Python to feel comfortable
+with Haskell functional way. I even have an unpublished blog post named “Is Haskell for
+me?” in which I argue that while it had powerful abstractions, they got in the way for me
+to express my ideas.</p>
+<p>Ironically, though, I found myself writing <em>functional</em> Python more and more frequently.
+So this summer I decided to give it another go.</p>
+<h2 id="my-impressions-so-far">My impressions so far</h2>
+<p>Through 127 exercises, the first part of this MOOC has introduced me to recursion
+(obviously), higher order functions, pattern matching, algebraic data types, recursive
+types, classes and instances. All in all, it’s a good dive into the language even if you
+don’t really delve into the “abstract nonsense”<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> parts of Haskell.</p>
+<p>So far, I have liked the language. I think most concepts can be succintly expressed in it,
+and encourages you to actually <em>design</em> your program through its rich type system and then
+write the functions that operate on them. More often than not, the language has tools to
+solve the problem at hand in a few lines if you are ingenious enough.</p>
+<p>Many algorithms are easily expressed in a functional language, especially through the use
+of higher order functions, and I no longer feel like the syntax “gets in the way”.</p>
+<p>I think my current exposure to the language has given me enough knowledge to solve most
+problems I could come up with and also to learn on my own from now on (however, I plan on
+doing part 2 of the MOOC).</p>
+<h2 id="a-prototyping-language">A prototyping language?</h2>
+<p>My view of Haskell is that it could potentially be a really good prototyping language.
+Yes, even better than Python for a lot of cases. It’s true that, if there’s a “language
+for the masses” right now, it has to be Python (closely followed by JavaScript probably).</p>
+<p>Python gained fame quickly (in the scientific community at least) as an easy-to-write
+lanugage that was <em>good enough</em> for rapid prototyping of algorithms. I don’t want to
+rant too much about how Python came to be what it is today, but at least for scientists,
+its direct competitor (MATLAB) was just much more expensive (I mean, Python is free)
+and clunky for package creation/distribution. In that regard, Python was similar in ease
+of writing, but actually had the concept of “modules” and even a package manager which
+greatly helped authors to create open source alternatives to some of MATLAB’s strongest
+points (plotting for example); once <code>numpy</code> and <code>matplotlib</code> came into existence, it was
+game over IMO. Plus it offered OOP which was all the rage back then.</p>
+<p>However, Haskell has another set of features to offer:</p>
+<ul>
+<li>Its type system compels you to think about the domain model and break it down into
+logical components.</li>
+<li>Side effects are encapsulated into their own monad. This reduces surface area for bug-
+hunting.</li>
+<li>Code can be cleaner as a result of functional patterns such as function composition,
+algebraic data types and type classes.</li>
+</ul>
+<p>I think it really can help you write code that is better designed and readable (which can
+then be used as a template for a more performant implementation) than in Python, even if
+(or rather, precisely because) you can’t jump right into writing code and have an overhead
+thinking about what types to use and what functions you’ll need.</p>
+<h2 id="next-steps">Next steps</h2>
+<p>The second part of the MOOC, which I will do when I have time, deals with these
+conceptually advanced features like <code>Applicative</code>, <code>Functor</code> and of course the <code>Monad</code>
+class. I am particularly interested in the <code>Functor</code> class because some exercises were
+repetitive in that you needed to apply a function to the elements of a structure (while
+preserving it) and <code>Functor</code> suppossedly serves that purpose. It also teaches you how
+lazyness has implications on performance and how to bypass it when necessary, and then
+some libraries.</p>
+<p>I may take a detour to do <a href="https://lhbg-book.link/01-about.html">this other tutorial</a>, which teaches you to create a blog
+generator and also how a Haskell project is usually organized (something the MOOC doesn’t
+do), and I’m also interested in <a href="https://www.oreilly.com/library/view/parallel-and-concurrent/9781449335939/">Parallel and Concurrent Programming in Haskell</a> which
+for some easy side project like Julia sets (I love computing Julia sets as a code kata)
+might be handy.</p>
+<p>More importantly, I’d like to test it out in data applications. Nothing too intensive,
+but I want to re-implement some data pipelines at work to see how it goes.</p>
+<p>In Python, you use Pandas (or <a href="pola.rs">pola.rs</a>) as an API to an underlying [Arrow]
+(https://arrow.apache.org/) backend.
+But, could Haskell offer similar ability for data processing logic using its functional
+approach, which might feel more natural to pipelines (which are basically just function
+composition) than OOP method chaining? Especially since Haskell already has functions
+like <code>groupBy</code> as part of the <code>Data.List</code> library (however, I’m not sure how I could
+aggregate on column B given the column A using this function, yet).</p>
+<p>Moreover, the <code>Functor</code> class might allow for processing more heterogeneous data in an
+unified way.</p>
+<p>I really want to explore the potential of Haskell for data analysis.</p>
+<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>I worked with C++11, IIRC.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>it is my understanding that category theory is jokingly referred to as “abstract
+nonsense” among mathematicians. Haskell has a fame of having introduced category-theoretic
+concepts, such as monads, into itself (and influenced other languages to include some
+too).<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>
