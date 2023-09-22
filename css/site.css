@@ -16,9 +16,14 @@ body {
 }
 
 blockquote p{
+    margin-left: -20px; /* apparently, blockquote has a 40px inherent indentation. */
     font-size: calc(0.90 * var(--font-size));
     background-color: #f6f6f6;
     padding: 1.25vh;
+}
+
+blockquote p:before {
+    content: "〉";
 }
 
 h1 h2 h3 {
@@ -35,6 +40,11 @@ footer {
     padding: 5vh 0 0 0;
     border-top: 0.1rem solid #444;
 }
+
+[role=doc-endnote]{
+    font-size: calc(0.8 * var(--font-size));
+}
+
 nav {
     text-align: right;
 }

@@ -111,8 +111,7 @@ might be handy.
 More importantly, I'd like to test it out in data applications. Nothing too intensive,
 but I want to re-implement some data pipelines at work to see how it goes.
 
-In Python, you use Pandas (or [pola.rs](pola.rs)) as an API to an underlying [Arrow]
-(https://arrow.apache.org/) backend.
+In Python, you use Pandas (or [pola.rs](pola.rs)) as an API to an underlying [Arrow](https://arrow.apache.org/) backend.
 But, could Haskell offer similar ability for data processing logic using its functional
 approach, which might feel more natural to pipelines (which are basically just function
 composition) than OOP method chaining? Especially since Haskell already has functions
