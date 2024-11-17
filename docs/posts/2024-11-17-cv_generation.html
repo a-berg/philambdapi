@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>&Phi; &Lambda; &Pi; - My somewhat convoluted CV generation workflow</title>
+        <link rel="stylesheet" type="text/css" href="../css/site.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">&Phi; &Lambda; &Pi;</a>
+            </div>
+            <nav>
+                <!-- <a href="/">Home</a> -->
+                <a href="../media/AdrianBergesCV_Jan2023.pdf">CV</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../archive.html">Archive</a>
+            </nav>
+        </header>
+        <main role="main">
+            <h1>My somewhat convoluted CV generation workflow</h1>
+            <article>
+    <section class="header">
+        Posted on November 17, 2024
+        
+    </section>
+    <div class="info">
+        
+        Tags: <a title="All pages tagged 'programming'." href="../tags/programming.html">programming</a>
+        
+    </div>
+    <section>
+        <h2 id="introduction">Introduction</h2>
+<p>This is one of those tasks that are simple and straightforward, except for a programmer.</p>
+<p>Anybody has to write their own curriculum and keep it updated, once every few months at worst, sometimes less when you’re
+in a stable position. Ah, yes, if only things were so simple…</p>
+<p>As a programmer, I have this tendency to, you know, automate <em>everything</em>. Even things that shouldn’t be (and of course this
+is one of them). It all started, I remember, with my reject to using Word. I mean, most people have their CV done in Word I guess,
+maybe Canva or other graphical design tool if you feel extra-fancy. However, to me these tools were clunky and “unergonomic”…
+I had to manually set the position of many text boxes, or feel like the text flow wasn’t optimal, and these things, to an
+obsessive perfectionist like I am, are too much to bear. So, since I already knew LaTeX, I decided I could do better and do it
+easily too…</p>
+<p>Enter the rabbit hole.</p>
+<h2 id="first-step-latex">First step: LaTeX</h2>
+<p>This was my first step in a thousand-mile journey. Switching to LaTeX was a reasonable decision, to be honest: the Knuth algorithm
+for text-justification is still SotA and produces text that is simply too beautiful to look at to be ignored, and everything
+else having to do with kerning and box placement can be easily adjusted with very sane defaults that makes everything look <em>slick</em>.</p>
+<p>Also, if you have already compiled a Master’s Thesis and multiple essays with it (sadly no papers, I’m no PhD), honestly making
+a minimalistic CV document is not that hard. It’s mostly lists and sections, and you get some goodies for free like inserting
+today’s date to let the recruiter know when did you update it (some recruiters aren’t happy if it’s more than a <em>week</em> old).</p>
+<p>I quickly came up with a distribution and style I was happy with. Everything should’ve ended there. Except…</p>
+<p>Two things bugged me:</p>
+<ul>
+<li>I had to <em>manually</em> compute the time I had been working at my current job, like an <em>animal</em>. I looked for LaTeX packages that
+solved this, to no avail.</li>
+<li>Also, I wanted to have a two-language setup, and that meant having two copies of the same file, with the daunting
+possibility of one becoming outdated if I changed the sections of one e.g.</li>
+<li>Finally and more importantly, LaTeX doesn’t play well with HTML, and since I had planned to have a blog (this blog) running,
+I figured it would be nice to have my CV in HTML format too.</li>
+</ul>
+<p>What did it led to? Pandoc of course. Did I say I had written my Master’s Thesis in LaTeX? I lied. I did it in RMarkdown
+which exposed me to pandoc, and I had already played with it for a while so I thought “it’s not that far fetched to
+migrate to markdown and pandoc”.</p>
+<h2 id="pandoc">Pandoc</h2>
+<p>Oh did I enjoy this part. Pandoc might be my favourite program <em>ever</em>. It’s so well designed, and completely focused on the
+UNIX philosophy: do <em>one</em> thing and do it <em>extremely well</em>. This thing can convert markdown to anything, or anything to anything
+really, and has one of the best and feature-rich markdown flavors out there. Nowadays whenever I want to produce a nice-looking
+pdf, I mostly do it in pandoc instead of LaTeX. That’s how <strong>good</strong> it is.</p>
+<p>Initially, an item of my LaTeX CV file could be like this:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">\cvitem</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    {Data Scientist}</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    {2021 -- now (3 years <span class="fu">\&amp;</span> 2 months)}</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    {Gradiant}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    {Vigo, Pontevedra}</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">\begin</span>{<span class="ex">enumerate</span>}[label=<span class="fu">\textbullet</span>, itemsep=-1pt, rightmargin=0.5cm]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">\item</span> Did something amazing.</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">\item</span> More amazing things.</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">\item</span> ...</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">\end</span>{<span class="ex">enumerate</span>}</span></code></pre></div>
+<p>Which is not bad. But I thought I could do <em>better</em>. It still bugged me a little bit that content was not <em>completely</em>
+separated from style. So this led me to consider switching to markdown, then apply a LaTeX template via pandoc.</p>
+<p>However that didn’t make me super happy because I had litte control over which data should be put where (and I needed to
+automatically compute the job position duration, remember?). Which led me to YAML.</p>
+<p>With YAML, the same previous section now was:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">jobtitle</span><span class="kw">:</span><span class="at"> Data Scientist</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">location</span><span class="kw">:</span><span class="at"> Vigo, Pontevedra</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">company</span><span class="kw">:</span><span class="at"> Gradiant</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">start</span><span class="kw">:</span><span class="at"> 2021-08-17</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">end</span><span class="kw">:</span><span class="at"> now</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">highlights</span><span class="kw">:</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> Did something amazing.</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> More amazing things.</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> ...</span></span></code></pre></div>
+<p>Now it was a list of “job” items, with fields that could be sent via pandoc template to specific parts of the LaTeX macro:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">\cvitem</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    {<span class="ss">${it.jobtitle}}</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ss">    {$</span>{it.start} -- <span class="ss">${it.end} ($</span>{it.duration})}</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    {<span class="ss">${it.company}}</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ss">    {$</span>{it.location}}</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">\begin</span>{<span class="ex">enumerate</span>}[label=<span class="fu">\textbullet</span>, itemsep=-1pt, rightmargin=0.5cm]</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">\item</span> <span class="ss">${ it.highlights[</span><span class="sc">\item</span><span class="ss"> ] }</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="kw">\end</span>{<span class="ex">enumerate</span>}</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="ss">$</span>{ if(it.tools) }<span class="fu">\textit</span>{<span class="fu">\textbf</span>{Tools used}: <span class="ss">${ it.tools }.}</span><span class="sc">\\</span><span class="ss">$</span>{ endif }</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">\vspace</span>{12pt}</span></code></pre></div>
+<p>Oh, there’s a little trick I learnt about pandoc templates: you can “fold” lists with a custom separator easily like
+this: <code>list[sep]</code>. So for example, in the previous snippet the line:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">\item</span> <span class="ss">${ it.highlights[</span><span class="sc">\item</span><span class="ss"> ] }</span></span></code></pre></div>
+<p>would be expanded to:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode latex"><code class="sourceCode latex"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>  <span class="fu">\item</span> Did something amazing.<span class="fu">\item</span> More amazing things.<span class="fu">\item</span> ...</span></code></pre></div>
+<p>To me this was kind of mind blowing to be honest. You may notice how there’s a “Tools used” section that’s nowhere to be
+seen in my CV. Well, it’s because it’s commented in the YAML files, but I could easily list the tools used at a given position,
+and I <em>might</em>.</p>
+<p>Another goodie is localization. I can generate English and Spanish versions of the curriculum by having a conditional switch
+based on a variable I set on the command line. I could even set the English version to not have a picture of myself, since it’s
+customary to not have it in non Spanish-speaking countries, apparently (for now it stays there).</p>
+<h2 id="just">Just</h2>
+<p>I can’t forget about <code>just</code>, of course. Little rust binary that is similar to <code>make</code>, but supercharged. Helps a lot defining
+build commands.</p>
+<p>For example, I have the following <em>justfile</em>:</p>
+<pre class="just"><code>lang := &quot;en&quot;
+name := &quot;myname&quot;
+DATE := `LC_TIME=en_US.UTF-8 date &quot;+%b%Y&quot;`
+JOBNAME := name + &quot;_&quot; + DATE
+DOCUMENTS := &quot;~/Documents/cv/&quot;
+
+all: makepdf
+  mv ./cv.pdf ./{{JOBNAME}}_{{lang}}.pdf
+  cp ./{{JOBNAME}}_{{lang}}.pdf {{DOCUMENTS}}
+
+makepdf: processyml
+  pandoc --defaults pdf_defaults.yaml -V lang_es={{ if lang == &quot;es&quot; { &quot;true&quot; } else { &quot;&quot; } }}
+
+makeweb: processyml
+  pandoc --defaults html_defaults.yaml -V lang_es={{ if lang == &quot;es&quot; { &quot;true&quot; } else { &quot;&quot; } }}
+
+processyml:
+  pdm run python3 -m src.python.process_yaml_data -L {{lang}}
+
+get-fonts:
+  sudo apt install fonts-vollkorn fonts-open-sans
+
+pdm-init:
+  pdm init
+  pdm sync</code></pre>
+<p>It has some extras over Make, for example the possibility to override variable values in the command line (e.g. <code>just lang=es</code> would set <code>lang</code> to <code>"es"</code> instead and trigger the Spanish version of the CV to be compiled). I honestly don’t
+use just that much nowadays (what with not being a standard/base bash tool and thus having to force my teammates to
+install it if they want to run my projects), but since I was already using it in this repo and it is a personal project,
+I decided to go with it.</p>
+<h2 id="python-script-to-compute-the-date">Python script to compute the date</h2>
+<p>This was done more or less at the same time as the switch to pandoc. I had this hyper-fixation on automatically computing the
+current duration of my time at every position, and particularly the current one.</p>
+<p>Having no other options available (and not wanting to delve into pandoc filters – yet) I decided to write a simple
+Python script for it. You know, like in the old times when Python was just a batteries-included scripting language to do
+simple stuff.</p>
+<p>Basically the script is this:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> omegaconf <span class="im">import</span> OmegaConf</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> .date_logic <span class="im">import</span> DateInterval, CVDateInterval</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> argparse <span class="im">as</span> arg</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main():</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    parser <span class="op">=</span> arg.ArgumentParser()</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    parser.add_argument(<span class="st">&quot;-L&quot;</span>, <span class="st">&quot;--lang&quot;</span>, default<span class="op">=</span><span class="st">&quot;es&quot;</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    parsed_args <span class="op">=</span> parser.parse_args()</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    content <span class="op">=</span> Path(<span class="st">&quot;./content&quot;</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    sections <span class="op">=</span> (<span class="st">&quot;experience&quot;</span>, <span class="st">&quot;education&quot;</span>, <span class="st">&quot;skills&quot;</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    language <span class="op">=</span> parsed_args.lang</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> OmegaConf.create(</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="bu">dict</span>(</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>            (s, OmegaConf.load((content <span class="op">/</span> language <span class="op">/</span> s).with_suffix(<span class="st">&quot;.yaml&quot;</span>)))</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> s <span class="kw">in</span> sections</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> OmegaConf.merge(OmegaConf.load(content <span class="op">/</span> <span class="st">&quot;personal.yaml&quot;</span>), data)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> item <span class="kw">in</span> data.experience:</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        dt <span class="op">=</span> DateInterval(item.start, item.end)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>        dt <span class="op">=</span> CVDateInterval.from_interval(dt, language)</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        item[<span class="st">&quot;duration&quot;</span>] <span class="op">=</span> dt.span</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        item.start <span class="op">=</span> dt.start</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        item.end <span class="op">=</span> dt.end</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(<span class="st">&quot;./src/cv.yaml&quot;</span>, <span class="st">&quot;w+&quot;</span>) <span class="im">as</span> f:</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>        f.write(OmegaConf.to_yaml(data))</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">&quot;__main__&quot;</span>:</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    main()</span></code></pre></div>
+<p>Nice, right? Except I hid away the logic in 2 additional files. I mean they’re really short, but still (check the
+<a href="https://github.com/a-berg/philambdapi">github</a> if you want).</p>
+<p>What I basically do is define the language I want, open the YAML files in the right folder, process the dates,
+create a new merged <code>cv.yaml</code> file with everything + the computed durations, and that will be passed to pandoc.
+Easy peasy.</p>
+<h2 id="gitops">GitOps</h2>
+<p>But still this wasn’t enough. Ok, sure, I <em>am</em> automating most of the process… but what about the updates to the
+website!? What about <em>automatically compiling it on file changes</em>?</p>
+<p>That’s why I am setting up a Github workflow for it. I want to push the changes to the yaml files and trigger the CV compilation
+on GitHub and have the CV on the internet and readily accessible to myself (in case I’m not on my home computer and need to
+send the most recent version to someone) and this blog site.</p>
+<p>The idea is to use something along the lines of:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Build CV</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">on</span><span class="kw">:</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">push</span><span class="kw">:</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">branches</span><span class="kw">:</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> main</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">build-cv</span><span class="kw">:</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Checkout repository</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v3</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Python</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/setup-python@v4</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">python-version</span><span class="kw">:</span><span class="at"> </span><span class="st">'3.10'</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install Just</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="fu">      run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin/just</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        just --version</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Install Dependencies</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="fu">      run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        apt-get update</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>        apt-get install -y pandoc fonts-vollkorn fonts-open-sans</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>        curl -sSL https://pdm-project.org/install-pdm.py | python3 -</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>        just pdm-init</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Build PDF</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="fu">      run</span><span class="kw">: </span><span class="ch">|</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        just lang=en DOCUMENTS=&quot;.&quot;</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Upload Artifact</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/upload-artifact@v3</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Compiled CV</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">path</span><span class="kw">:</span><span class="at"> ./*.pdf</span></span></code></pre></div>
+<p>With this I would have my curriculum compiled on every push to main. Some improvements could be to compile the Spanish
+version if there were changes to these files, and do the same for the English version. Maybe use a custom image with the
+tools pre-installed so I don’t have to set up everything on a fresh Docker container every time… But I’m still new to
+GitHub workflows.</p>
+<h2 id="the-future-pandoc-filters-typst">The future: pandoc filters? Typst?</h2>
+<p>So, this is all well and good. Except.</p>
+<p>Except pandoc has a filter system that, if I was to learn Lua and its pandoc API, could solve the date problem <em>and</em> also not have
+any templates, but directly transform <em>yaml</em> to the pandoc <em>AST</em> and then to any document…</p>
+<p>Then there’s typst. A modern Rust alternative to LaTeX, which has a nice syntax, <em>maybe</em> can compute the durations by
+itself and has HTML support planned in the future. That could solve it, surely… Just one more technology and it will
+be <em>perfect</em>, you’ll see.</p>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>
