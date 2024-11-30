@@ -225,11 +225,11 @@ Easy peasy.
 But still this wasn't enough. Ok, sure, I _am_ automating most of the process... but what about the updates to the 
 website!? What about _automatically compiling it on file changes_?
 
-That's why I am setting up a Github workflow for it. I want to push the changes to the yaml files and trigger the CV compilation
+That's why I set up a Github workflow for it. I want to push the changes to the yaml files and trigger the CV compilation
 on GitHub and have the CV on the internet and readily accessible to myself (in case I'm not on my home computer and need to
 send the most recent version to someone) and this blog site.
 
-The idea is to use something along the lines of:
+After some trial and error, I ended up with this:
 
 ```yaml
 name: Build CV
@@ -253,33 +253,54 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install Just
-      run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin/just
-        just --version
+    - name: Set up Just
+      uses: taiki-e/install-action@just
+      with:
+        just-version: 1.36.0
 
-    - name: Install Dependencies
+    - name: Set up PDM
+      uses: pdm-project/setup-pdm@v4
+      with:
+        python-version: '3.10'
+
+    - name: Set up Pandoc
+      uses: pandoc/actions/setup@v1
+
+    - name: Set up Tectonic
+      uses: wtfjoke/setup-tectonic@v3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install FontAwesome Free v6
       run: |
-        apt-get update
-        apt-get install -y pandoc fonts-vollkorn fonts-open-sans
-        curl -sSL https://pdm-project.org/install-pdm.py | python3 -
+        wget https://github.com/FortAwesome/Font-Awesome/releases/download/6.5.2/fontawesome-free-6.5.2-desktop.zip
+        sudo unzip -j fontawesome-free-6.5.2-desktop.zip "*/otfs/*" -d /usr/local/share/fonts
+        sudo fc-cache -f -v  # Update font cache
+
+    - name: Install Vollkorn, Open Sans, Python packages
+      run: |
+        just get-fonts
         just pdm-init
 
-    - name: Build PDF
+    - name: Build PDF with Docker image
       run: |
         just lang=en DOCUMENTS="."
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        name: Compiled CV
-        path: ./*.pdf
+        files: ./*.pdf
 ```
+
+As you can see, most of it is just installing tools via premade GitHub actions (except the fonts and python dependencies),
+then build it and use a release action to publish the latest source code & the compiled PDF. As of now the workflow only compiles
+the English version, and has no picture (there was a problem with uploading it, may be resolved but haven't tried). 
+I'd like to change that soon, but for now I'm pretty content.
 
 With this I would have my curriculum compiled on every push to main. Some improvements could be to compile the Spanish
 version if there were changes to these files, and do the same for the English version. Maybe use a custom image with the
-tools pre-installed so I don't have to set up everything on a fresh Docker container every time... But I'm still new to
-GitHub workflows.
+tools pre-installed so the worker doesn't have to set up everything every single time and save up time.
 
 ## The future: pandoc filters? Typst?
 
