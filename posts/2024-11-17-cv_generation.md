@@ -1,6 +1,7 @@
 ---
 title: My somewhat convoluted CV generation workflow
 tags: programming
+updated: November 29, 2024
 ---
 
 ## Introduction
